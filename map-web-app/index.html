@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Maps with Autocomplete</title>
+    <style>
+        /* Make the map take up the full page */
+        #map {
+            height: 100%;
+        }
+        /* Style the search box */
+        #autocomplete-input {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            width: 300px;
+            margin-left: -150px;
+            padding: 10px;
+            background: white;
+            z-index: 5;
+        }
+    </style>
+</head>
+<body>
+    <!-- Input for Autocomplete -->
+    <input id="autocomplete-input" type="text" placeholder="Search for a location">
+    
+    <!-- Div to display the map -->
+    <div id="map"></div>
+    
+    <!-- Load the Google Maps and Places API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&callback=initMap" async defer></script>
+    
+    <script>
+        let map, autocomplete, marker, infowindow;
+
+        function initMap() {
+            // Initialize the map
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 37.7749, lng: -122.4194 }, // San Francisco as the default location
+                zoom: 13
+            });
+
+            // Initialize the autocomplete input field
+            autocomplete = new google.maps.places.Autocomplete(document.getElementById('autocomplete-input'), {
+                types: ['geocode'], // You can change the types to specific place categories if needed
+                fields: ['place_id', 'geometry', 'name']
+            });
+
+            // When the user selects a place from the autocomplete suggestions
+            autocomplete.addListener('place_changed', onPlaceChanged);
+
+            // Create an info window to display place information
+            infowindow = new google.maps.InfoWindow();
+        }
+
+        function onPlaceChanged() {
+            const place = autocomplete.getPlace();
+            if (!place.geometry) {
+                // If no geometry is found, return
+                return;
+            }
+
+            // Center the map on the place
+            if (place.geometry.location) {
+                map.setCenter(place.geometry.location);
+                map.setZoom(15); // Zoom in to the selected place
+            }
+
+            // Place a marker at the selected location
+            if (marker) {
+                marker.setMap(null); // Remove any previous marker
+            }
+
+            marker = new google.maps.Marker({
+                position: place.geometry.location,
+                map: map
+            });
+
+            // Display the place name in the info window
+            infowindow.setContent('<div><strong>' + place.name + '</strong><br>' +
+                                  'Place ID: ' + place.place_id + '</div>');
+            infowindow.open(map, marker);
+        }
+    </script>
+</body>
+</html>
